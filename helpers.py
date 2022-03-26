@@ -9,10 +9,14 @@ def table_scrape(url, index=0):
     Args:
         url: string representing the url of a wikipedia article
         index: index of the table on the wikipedia page
+
+    Returns:
+        pandas dataframe consisting of data in the wikitable
     """
     wikiurl=url
     table_class="wikitable sortable jquery-tablesorter"
     response=requests.get(wikiurl)
+    # status code must be 200 to legally scrape
     if response.status_code == 200:
         # parse data from the html into a beautifulsoup object
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -26,8 +30,19 @@ def table_scrape(url, index=0):
 
 def medal_clean(df, year):
     """
+    This functions takes in a data frame of the medals tables from wikipedia and cleans it to be easier to read.
+
+    Args:
+        df: data frame containing medals table from wikipedia
+        year: integer representing the year of the olympic games
+
+    Returns:
+        cleaned dataframe
     """
+    # renaming columns to have the year in the title
     df.rename(columns = {"Gold" : f"Gold-{year}", "Silver" : f"Silver-{year}", "Bronze" : f"Bronze-{year}", "Total" : f"Total-{year}"}, inplace = True)
+    # dropping rank column because it's not relevant for our question
     df.drop(["Rank"], axis = 1, inplace = True)
+    # removing final row containing total number of countries
     df = df[:-1]
     return df
