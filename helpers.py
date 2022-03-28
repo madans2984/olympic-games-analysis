@@ -51,6 +51,8 @@ def medal_clean(df, year, host):
     # dropping rank column because it's not relevant for our question
     df.drop(["Rank"], axis = 1, inplace = True)
     df.replace({f"{host}*" : f"{host}"}, inplace = True)
+    df[f"Weighted-{year}"] = df[f"Gold-{year}"] * 3 + df[f"Silver-{year}"] * 2 + df[f"Bronze-{year}"] * 1
+
     # removing final row containing total number of countries
     df = df[:-1]
     return df
