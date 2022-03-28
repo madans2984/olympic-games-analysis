@@ -8,7 +8,7 @@ def medals_plot(df, year, type, medal):
         fig = px.scatter(df, x = df[f"{type}-{year}"], y = df[f"{medal}-{year}"], trendline="ols", labels={f"{type}-{year}" : "Population (in thousands)", f"{medal}-{year}" : f"{medal} Olympic medals"}, title=f"{type} vs {medal} medals in {year}", hover_data=['NOC'])
     fig.show()
 
-def context_plot(df, year, type1="GDP", type2="pop"):
+def context_plot(df, year, type1="GDP", type2="Pop"):
     """
     """
     import plotly.express as px
