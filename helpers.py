@@ -32,7 +32,7 @@ def table_scrape(url, index=0):
         print("Error: This table should not be scraped due to its status" \
               " code.")
 
-def medal_clean(df, year):
+def medal_clean(df, year, host):
     """
     This functions takes in a data frame of the medals tables from wikipedia
     and cleans it to be easier to read.
@@ -50,6 +50,7 @@ def medal_clean(df, year):
                          "Total" : f"Total-{year}"}, inplace = True)
     # dropping rank column because it's not relevant for our question
     df.drop(["Rank"], axis = 1, inplace = True)
+    df.replace({f"{host}*" : f"{host}"}, inplace = True)
     # removing final row containing total number of countries
     df = df[:-1]
     return df
