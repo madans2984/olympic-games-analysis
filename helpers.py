@@ -117,14 +117,14 @@ def clean_population_data(filepath_original, filepath_result=None):
     population.drop(["1985", "1990", "1995", "2000", "%", "%.1", "%.2", "%.3", "%.4","%.5", "%.6"], axis = 1, inplace = True)
     # renaming columns to be associate with the correct olympic years
     population.rename(columns = {"Country (or dependent territory)":"Country",
-        "2005": "pop-2004",
-        "2010": "pop-2008",
-        "2015": "pop-2016"}, inplace = True)
+        "2005": "Pop-2004",
+        "2010": "Pop-2008",
+        "2015": "Pop-2016"}, inplace = True)
     # creating a column for the population in 2012 and duplicating 2008 into it
-    population["pop-2012"] = population["pop-2008"]
+    population["Pop-2012"] = population["Pop-2008"]
     # reordering population dataframe to be chronological
-    population = population[["Country", "pop-2004", "pop-2008", "pop-2012",
-        "pop-2016"]]
+    population = population[["Country", "Pop-2004", "Pop-2008", "Pop-2012",
+        "Pop-2016"]]
 
     population.replace({"United Kingdom" : "Great Britain"}, inplace = True)
     population.replace({"Taiwan" : "Chinese Taipei"}, inplace = True)
