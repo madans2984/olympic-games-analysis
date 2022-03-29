@@ -59,7 +59,7 @@ def table_scrape(url, index=0):
 def scrape_medal_table(url, year, host):
     table = table_scrape(url)
     # renaming columns to have the year in the title
-    table.rename(columns = {"Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
+    table.rename(columns = {"NOC": "Country", "Nation": "Country", "Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
         "Bronze": f"Bronze-{year}", "Total": f"Total-{year}"}, inplace = True)
     # dropping rank column because it's not relevant for our question
     table.drop(["Rank"], axis = 1, inplace = True)
@@ -76,17 +76,16 @@ def scrape_medal_data(output_path=None):
     pg_2012 = "https://en.m.wikipedia.org/wiki/2012_Summer_Olympics_medal_table"
     pg_2016 = "https://en.wikipedia.org/wiki/2016_Summer_Olympics_medal_table"
     medals_2004 = scrape_medal_table(pg_2004, "2004", "Greece")
-    medals_2004.rename(columns = {"Nation" : "NOC"}, inplace = True)
     medals_2008 = scrape_medal_table(pg_2008, "2008", "China")
     medals_2012 = scrape_medal_table(pg_2012, "2012", "Great Britain")
     medals_2016 = scrape_medal_table(pg_2016, "2016", "Brazil")
 
-    medals_all = medals_2012.merge(medals_2008, how="outer", left_on="NOC",
-        right_on="NOC")
-    medals_all = medals_all.merge(medals_2016, how="outer", left_on="NOC",
-        right_on="NOC")
-    medals_all = medals_all.merge(medals_2004, how="outer", left_on="NOC",
-        right_on="NOC")
+    medals_all = medals_2012.merge(medals_2008, how="outer", left_on="Country",
+        right_on="Country")
+    medals_all = medals_all.merge(medals_2016, how="outer", left_on="Country",
+        right_on="Country")
+    medals_all = medals_all.merge(medals_2004, how="outer", left_on="Country",
+        right_on="Country")
 
     if output_path != None:
         medals_all.to_csv(output_path, index=False)
@@ -94,7 +93,7 @@ def scrape_medal_data(output_path=None):
 
 def clean_medal_data(path_orig, output_path=None):
     medals = pd.read_csv(path_orig)
-    independents_index = medals.index[medals['NOC'] == "Independent Olympic Athletes"].item()
+    independents_index = medals.index[medals['Country'] == "Independent Olympic Athletes"].item()
     medals.drop(independents_index, axis = 0, inplace = True)
     medals = medals.fillna(0)
 
@@ -227,9 +226,8 @@ def make_weighted_ave_row(weights_df, vals_df, country1_name, country2_name):
 
 
 def merge_data(medals_df, pop_df, gdp_df, output_path=None):
-    total = medals_df.merge(gdp_df,how="left",left_on="NOC",right_on="Country")
-    total = total.merge(pop_df,how="left",left_on="NOC",right_on="Country")
-    total.drop(["Country_x","Country_y"], axis=1, inplace=True)
+    total = medals_df.merge(gdp_df,how="left",left_on="Country",right_on="Country")
+    total = total.merge(pop_df,how="left",left_on="Country",right_on="Country")
 
     if output_path != None:
         total.to_csv(output_path, index=False)
