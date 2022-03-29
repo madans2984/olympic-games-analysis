@@ -4,7 +4,10 @@ from bs4 import BeautifulSoup # library to parse HTML documents
 # get the response in the form of html
 def table_scrape(url, index=0):
     """
-    This functions takes a string representing the url of a wikipedia article and returns the first table on the page. If there are multiple tables and the return needs to be modified the index is an integer which represents the index of the table which needs to be scarped.
+    This functions takes a string representing the url of a wikipedia article
+    and by default returns the first table on the page. If there are multiple
+    tables and the return needs to be modified the index is an integer which
+    represents the index of the table which needs to be scraped.
     
     Args:
         url: string representing the url of a wikipedia article
@@ -18,19 +21,21 @@ def table_scrape(url, index=0):
     response = requests.get(wikiurl)
     # status code must be 200 to legally scrape
     if response.status_code == 200:
-        # parse data from the html into a beautifulsoup object
+        # Parse data from the html into a beautifulsoup object
         soup = BeautifulSoup(response.text, "html.parser")
         tables=soup.findAll("table",{"class": "wikitable"})
         df=pd.read_html(str(tables[index]))
-        # convert list to dataframe
+        # Convert list to dataframe
         df=pd.DataFrame(df[0])
         return df
     else:
-        print("Error: This table should not be scraped due to its status code.")
+        print("Error: This table should not be scraped due to its status" \
+              " code.")
 
-def medal_clean(df, year):
+def medal_clean(df, year, host):
     """
-    This functions takes in a data frame of the medals tables from wikipedia and cleans it to be easier to read.
+    This functions takes in a data frame of the medals tables from wikipedia
+    and cleans it to be easier to read.
 
     Args:
         df: data frame containing medals table from wikipedia
@@ -44,6 +49,7 @@ def medal_clean(df, year):
         "Bronze": f"Bronze-{year}", "Total": f"Total-{year}"}, inplace = True)
     # dropping rank column because it's not relevant for our question
     df.drop(["Rank"], axis = 1, inplace = True)
+    df.replace({f"{host}*" : f"{host}"}, inplace = True)
     # removing final row containing total number of countries
     df = df[:-1]
     return df
