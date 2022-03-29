@@ -8,7 +8,7 @@ def table_scrape(url, index=0):
     and by default returns the first table on the page. If there are multiple
     tables and the return needs to be modified the index is an integer which
     represents the index of the table which needs to be scraped.
-    
+
     Args:
         url: string representing the url of a wikipedia article
         index: index of the table on the wikipedia page
@@ -32,29 +32,75 @@ def table_scrape(url, index=0):
         print("Error: This table should not be scraped due to its status" \
               " code.")
 
-def medal_clean(df, year, host):
-    """
-    This functions takes in a data frame of the medals tables from wikipedia
-    and cleans it to be easier to read.
+# def medal_clean(df, year, host):
+#     """
+#     This functions takes in a data frame of the medals tables from wikipedia
+#     and cleans it to be easier to read.
 
-    Args:
-        df: data frame containing medals table from wikipedia
-        year: integer representing the year of the olympic games
+#     Args:
+#         df: data frame containing medals table from wikipedia
+#         year: integer representing the year of the olympic games
 
-    Returns:
-        cleaned dataframe
-    """
+#     Returns:
+#         cleaned dataframe
+#     """
+#     # renaming columns to have the year in the title
+#     df.rename(columns = {"Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
+#         "Bronze": f"Bronze-{year}", "Total": f"Total-{year}"}, inplace = True)
+#     # dropping rank column because it's not relevant for our question
+#     df.drop(["Rank"], axis = 1, inplace = True)
+#     df.replace({f"{host}*" : f"{host}"}, inplace = True)
+#     df[f"Weighted-{year}"] = df[f"Gold-{year}"] * 3 + df[f"Silver-{year}"] * 2 + df[f"Bronze-{year}"] * 1
+
+#     # removing final row containing total number of countries
+#     df = df[:-1]
+#     return df
+
+def scrape_medal_table(url, year, host):
+    table = table_scrape(url)
     # renaming columns to have the year in the title
-    df.rename(columns = {"Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
+    table.rename(columns = {"Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
         "Bronze": f"Bronze-{year}", "Total": f"Total-{year}"}, inplace = True)
     # dropping rank column because it's not relevant for our question
-    df.drop(["Rank"], axis = 1, inplace = True)
-    df.replace({f"{host}*" : f"{host}"}, inplace = True)
-    df[f"Weighted-{year}"] = df[f"Gold-{year}"] * 3 + df[f"Silver-{year}"] * 2 + df[f"Bronze-{year}"] * 1
+    table.drop(["Rank"], axis = 1, inplace = True)
+    table.replace({f"{host}*" : f"{host}"}, inplace = True)
+    table[f"Weighted-{year}"] = table[f"Gold-{year}"] * 3 + table[f"Silver-{year}"] * 2 + table[f"Bronze-{year}"] * 1
 
     # removing final row containing total number of countries
-    df = df[:-1]
-    return df
+    table = table[:-1]
+    return table
+
+def scrape_medal_data(output_path=None):
+    pg_2004 = "https://en.m.wikipedia.org/wiki/2004_Summer_Olympics_medal_table"
+    pg_2008 = "https://en.m.wikipedia.org/wiki/2008_Summer_Olympics_medal_table"
+    pg_2012 = "https://en.m.wikipedia.org/wiki/2012_Summer_Olympics_medal_table"
+    pg_2016 = "https://en.wikipedia.org/wiki/2016_Summer_Olympics_medal_table"
+    medals_2004 = scrape_medal_table(pg_2004, "2004", "Greece")
+    medals_2004.rename(columns = {"Nation" : "NOC"}, inplace = True)
+    medals_2008 = scrape_medal_table(pg_2008, "2008", "China")
+    medals_2012 = scrape_medal_table(pg_2012, "2012", "Great Britain")
+    medals_2016 = scrape_medal_table(pg_2016, "2016", "Brazil")
+
+    medals_all = medals_2012.merge(medals_2008, how="outer", left_on="NOC",
+        right_on="NOC")
+    medals_all = medals_all.merge(medals_2016, how="outer", left_on="NOC",
+        right_on="NOC")
+    medals_all = medals_all.merge(medals_2004, how="outer", left_on="NOC",
+        right_on="NOC")
+
+    if output_path != None:
+        medals_all.to_csv(output_path, index=False)
+    return medals_all
+
+def clean_medal_data(path_orig, output_path=None):
+    medals = pd.read_csv(path_orig)
+    independents_index = medals.index[medals['NOC'] == "Independent Olympic Athletes"].item()
+    medals.drop(independents_index, axis = 0, inplace = True)
+    medals = medals.fillna(0)
+
+    if output_path != None:
+        medals.to_csv(output_path, index=False)
+    return medals
 
 def scrape_population_data(output_path=None):
     wikipedia_page = ("https://en.wikipedia.org/wiki/List_of_countries_by_past_"
@@ -65,15 +111,6 @@ def scrape_population_data(output_path=None):
         population.to_csv(output_path, index=False)
     return population
 
-def scrape_gdp_data(output_path=None):
-    wikipedia_page = ("https://en.wikipedia.org/wiki/"
-        "List_of_countries_by_past_and_projected_GDP_(PPP)_per_capita")
-    gdp_2000s = table_scrape(wikipedia_page, 2)
-    gdp_2010s = table_scrape(wikipedia_page, 3)
-    gdp_total = gdp_2000s.merge(gdp_2010s,how="left",left_on="Country (or dependent territory)",right_on="Country (or dependent territory)")
-    if output_path != None:
-        gdp_total.to_csv(output_path, index=False)
-    return gdp_total
 
 def clean_population_data(filepath_original, filepath_result=None):
     population = pd.read_csv(filepath_original)
@@ -100,6 +137,20 @@ def clean_population_data(filepath_original, filepath_result=None):
         population.to_csv(filepath_result, index=False)
     return population
 
+
+def scrape_gdp_data(output_path=None):
+    wikipedia_page = ("https://en.wikipedia.org/wiki/"
+        "List_of_countries_by_past_and_projected_GDP_(PPP)_per_capita")
+    gdp_2000s = table_scrape(wikipedia_page, 2)
+    gdp_2010s = table_scrape(wikipedia_page, 3)
+    gdp_total = gdp_2000s.merge(gdp_2010s,how="left",
+        left_on="Country (or dependent territory)",
+        right_on="Country (or dependent territory)")
+    if output_path != None:
+        gdp_total.to_csv(output_path, index=False)
+    return gdp_total
+
+
 def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
     gdp_total = pd.read_csv(path_orig)
     if clean_pop_data_path == None:
@@ -124,7 +175,8 @@ def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
     gdp_total.replace({"Taiwan" : "Chinese Taipei"}, inplace = True)
 
     # Use the UN's GDP per capita data for Cuba and North Korea
-    # Source: https://en.wikipedia.org/wiki/List_of_countries_by_past_and_projected_GDP_(nominal)_per_capita#UN_estimates_between_2000_and_2009
+    # Source: https://en.wikipedia.org/wiki/List_of_countries_by_past_and_projec
+    #         ted_GDP_(nominal)_per_capita#UN_estimates_between_2000_and_2009
     cuba_row = {"Country":"Cuba",
         "GDP-2004": 3399,
         "GDP-2008": 5386,
@@ -172,3 +224,13 @@ def make_weighted_ave_row(weights_df, vals_df, country1_name, country2_name):
         val2 = country2_vals[val_col].item()
         new_row[val_col] = (weight1*val1 + weight2*val2)//(val1+val2)
     return new_row
+
+
+def merge_data(medals_df, pop_df, gdp_df, output_path=None):
+    total = medals_df.merge(gdp_df,how="left",left_on="NOC",right_on="Country")
+    total = total.merge(pop_df,how="left",left_on="NOC",right_on="Country")
+    total.drop(["Country_x","Country_y"], axis=1, inplace=True)
+
+    if output_path != None:
+        total.to_csv(output_path, index=False)
+    return total
