@@ -10,11 +10,11 @@ def table_scrape(url, index=0):
     represents the index of the table which needs to be scraped.
 
     Args:
-        url: string representing the url of a wikipedia article
-        index: index of the table on the wikipedia page
+        url: string representing the url of a wikipedia article.
+        index: index of the table on the wikipedia page.
 
     Returns:
-        pandas dataframe consisting of data in the wikitable
+        pandas dataframe consisting of data in the wikitable.
     """
     wikiurl = url
     table_class = "wikitable sortable jquery-tablesorter"
@@ -57,9 +57,14 @@ def table_scrape(url, index=0):
 #     return df
 
 def scrape_medal_table(url, year, host):
+    """
+    Convert the medal table on the wikipedia page for an olympic games to a pandas dataframe.
+
+    Makes each column (other than "Country") preface with the year of the games.
+    """
     table = table_scrape(url)
     # renaming columns to have the year in the title
-    table.rename(columns = {"Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
+    table.rename(columns = {"NOC": "Country", "Nation": "Country", "Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
         "Bronze": f"Bronze-{year}", "Total": f"Total-{year}"}, inplace = True)
     # dropping rank column because it's not relevant for our question
     table.drop(["Rank"], axis = 1, inplace = True)
@@ -71,30 +76,49 @@ def scrape_medal_table(url, year, host):
     return table
 
 def scrape_medal_data(output_path=None):
+    '''
+    Scrapes medal data for desired years from Wikipedia and merges them into
+    one dataframe.
+    
+    Args:
+        output_path: name of file dataframe is saved to.
+    
+    Returns:
+        medals_all: merged dataframe.
+    '''
     pg_2004 = "https://en.m.wikipedia.org/wiki/2004_Summer_Olympics_medal_table"
     pg_2008 = "https://en.m.wikipedia.org/wiki/2008_Summer_Olympics_medal_table"
     pg_2012 = "https://en.m.wikipedia.org/wiki/2012_Summer_Olympics_medal_table"
     pg_2016 = "https://en.wikipedia.org/wiki/2016_Summer_Olympics_medal_table"
     medals_2004 = scrape_medal_table(pg_2004, "2004", "Greece")
-    medals_2004.rename(columns = {"Nation" : "NOC"}, inplace = True)
     medals_2008 = scrape_medal_table(pg_2008, "2008", "China")
     medals_2012 = scrape_medal_table(pg_2012, "2012", "Great Britain")
     medals_2016 = scrape_medal_table(pg_2016, "2016", "Brazil")
 
-    medals_all = medals_2012.merge(medals_2008, how="outer", left_on="NOC",
-        right_on="NOC")
-    medals_all = medals_all.merge(medals_2016, how="outer", left_on="NOC",
-        right_on="NOC")
-    medals_all = medals_all.merge(medals_2004, how="outer", left_on="NOC",
-        right_on="NOC")
+    medals_all = medals_2012.merge(medals_2008, how="outer", left_on="Country",
+        right_on="Country")
+    medals_all = medals_all.merge(medals_2016, how="outer", left_on="Country",
+        right_on="Country")
+    medals_all = medals_all.merge(medals_2004, how="outer", left_on="Country",
+        right_on="Country")
 
     if output_path != None:
         medals_all.to_csv(output_path, index=False)
     return medals_all
 
 def clean_medal_data(path_orig, output_path=None):
+    '''
+    Clean the medal data by removing data for Independent Olympic Athletes.
+    
+    Args:
+        path_orig: path of dataframe to clean.
+        output_path: name of file dataframe is saved to.
+
+    Returns:
+        medals: cleaned dataframe.
+    '''
     medals = pd.read_csv(path_orig)
-    independents_index = medals.index[medals['NOC'] == "Independent Olympic Athletes"].item()
+    independents_index = medals.index[medals['Country'] == "Independent Olympic Athletes"].item()
     medals.drop(independents_index, axis = 0, inplace = True)
     medals = medals.fillna(0)
 
@@ -103,6 +127,15 @@ def clean_medal_data(path_orig, output_path=None):
     return medals
 
 def scrape_population_data(output_path=None):
+    '''
+    Scrape population data from wikipedia.
+    
+    Args:
+        output_path: name of file dataframe is saved to.
+    
+    Returns:
+        population: dataframe.
+    '''
     wikipedia_page = ("https://en.wikipedia.org/wiki/List_of_countries_by_past_"
     "and_projected_future_population#Estimates_between_the_years_1985_and_2015_"
     "(in_thousands)")
@@ -113,19 +146,36 @@ def scrape_population_data(output_path=None):
 
 
 def clean_population_data(filepath_original, filepath_result=None):
+    '''
+    Clean population data from wikipedia by removing unnecessary years and
+    percentages of population to leave whole numbers. The closest years'
+    population was used for each year of the Olympics(i.e. population data in
+    2005 was used for the Olympic Games in 2004, population data in 2010 was
+    used for the Games in both 2008 and 2010, and population data in 2015 was
+    used for 2016. Population columns were renamed to correspond with Olympic
+    Games' years. Special cases: renamed Great Britain as United Kingdom and
+    Chinese Taipei as Taiwan, as well as summed populations of Serbia and
+    Montenegro.
+    
+    Args:
+        output_path: name of file dataframe is saved to.
+    
+    Returns:
+        population: dataframe.
+    '''
     population = pd.read_csv(filepath_original)
     # dropping unnecessary years
     population.drop(["1985", "1990", "1995", "2000", "%", "%.1", "%.2", "%.3", "%.4","%.5", "%.6"], axis = 1, inplace = True)
     # renaming columns to be associate with the correct olympic years
     population.rename(columns = {"Country (or dependent territory)":"Country",
-        "2005": "pop-2004",
-        "2010": "pop-2008",
-        "2015": "pop-2016"}, inplace = True)
+        "2005": "Pop-2004",
+        "2010": "Pop-2008",
+        "2015": "Pop-2016"}, inplace = True)
     # creating a column for the population in 2012 and duplicating 2008 into it
-    population["pop-2012"] = population["pop-2008"]
+    population["Pop-2012"] = population["Pop-2008"]
     # reordering population dataframe to be chronological
-    population = population[["Country", "pop-2004", "pop-2008", "pop-2012",
-        "pop-2016"]]
+    population = population[["Country", "Pop-2004", "Pop-2008", "Pop-2012",
+        "Pop-2016"]]
 
     population.replace({"United Kingdom" : "Great Britain"}, inplace = True)
     population.replace({"Taiwan" : "Chinese Taipei"}, inplace = True)
@@ -139,6 +189,15 @@ def clean_population_data(filepath_original, filepath_result=None):
 
 
 def scrape_gdp_data(output_path=None):
+    '''
+    Scrape the IMF's GDP per capita data from wikipedia.
+    
+    Args:
+        output_path: name of file dataframe is saved to.
+    
+    Returns:
+        gdp_total: dataframe.
+    '''
     wikipedia_page = ("https://en.wikipedia.org/wiki/"
         "List_of_countries_by_past_and_projected_GDP_(PPP)_per_capita")
     gdp_2000s = table_scrape(wikipedia_page, 2)
@@ -152,6 +211,21 @@ def scrape_gdp_data(output_path=None):
 
 
 def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
+    '''
+    Clean GDP data by dropping all unnecessary years. Special cases: renamed
+    Great Britain as United Kingdom and Chinese Taipei as Taiwan; use the UN's
+    GDP per capita for Cuba and North Korea; get weighted averages of GDP per
+    capita values for Serbia and Monetenegro to combine into single value per
+    year.
+    
+    Args:
+        clean_pop_data_path: path of cleaned dataframe:
+        path_orig: path of dataframe if not already cleaned.
+        path_result: name of file dataframe is saved to.
+
+    Returns:
+        gdp_total: cleaned dataframe.
+    '''
     gdp_total = pd.read_csv(path_orig)
     if clean_pop_data_path == None:
         population = clean_population_data("population_original.csv")
@@ -227,9 +301,21 @@ def make_weighted_ave_row(weights_df, vals_df, country1_name, country2_name):
 
 
 def merge_data(medals_df, pop_df, gdp_df, output_path=None):
-    total = medals_df.merge(gdp_df,how="left",left_on="NOC",right_on="Country")
-    total = total.merge(pop_df,how="left",left_on="NOC",right_on="Country")
-    total.drop(["Country_x","Country_y"], axis=1, inplace=True)
+    '''
+    Merge medals, population, and gdp data into single dataframe based on
+    country.
+    
+    Args:
+        medals_df: dataframe with medals data.
+        pop_df: dataframe with population data.
+        gdp_df: dataframe with GDP per capita data.
+        output_path: name of file dataframe is saved to.
+    
+    Returns:
+        total: the merged dataframe.
+    '''
+    total = medals_df.merge(gdp_df,how="left",left_on="Country",right_on="Country")
+    total = total.merge(pop_df,how="left",left_on="Country",right_on="Country")
 
     if output_path != None:
         total.to_csv(output_path, index=False)
