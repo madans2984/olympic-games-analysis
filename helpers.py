@@ -57,6 +57,11 @@ def table_scrape(url, index=0):
 #     return df
 
 def scrape_medal_table(url, year, host):
+    """
+    Convert the medal table on the wikipedia page for an olympic games to a pandas dataframe.
+
+    Makes each column (other than "Country") preface with the year of the games.
+    """
     table = table_scrape(url)
     # renaming columns to have the year in the title
     table.rename(columns = {"NOC": "Country", "Nation": "Country", "Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
