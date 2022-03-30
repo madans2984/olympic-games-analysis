@@ -75,6 +75,7 @@ def scrape_medal_table(url, year, host):
     table = table[:-1]
     return table
 
+<<<<<<< HEAD
 def scrape_medal_data(output_path=None):
     '''
     Scrapes medal data for desired years from Wikipedia and merges them into
@@ -86,6 +87,9 @@ def scrape_medal_data(output_path=None):
     Returns:
         medals_all: merged dataframe.
     '''
+=======
+def scrape_medal_data(output_path=None, include_NaNs=True):
+>>>>>>> f19abd2906e96fbcd863fffa7a39834e613ab4f0
     pg_2004 = "https://en.m.wikipedia.org/wiki/2004_Summer_Olympics_medal_table"
     pg_2008 = "https://en.m.wikipedia.org/wiki/2008_Summer_Olympics_medal_table"
     pg_2012 = "https://en.m.wikipedia.org/wiki/2012_Summer_Olympics_medal_table"
@@ -95,12 +99,17 @@ def scrape_medal_data(output_path=None):
     medals_2012 = scrape_medal_table(pg_2012, "2012", "Great Britain")
     medals_2016 = scrape_medal_table(pg_2016, "2016", "Brazil")
 
-    medals_all = medals_2012.merge(medals_2008, how="outer", left_on="Country",
-        right_on="Country")
-    medals_all = medals_all.merge(medals_2016, how="outer", left_on="Country",
-        right_on="Country")
-    medals_all = medals_all.merge(medals_2004, how="outer", left_on="Country",
-        right_on="Country")
+    if include_NaNs:
+        merge_method = "outer"
+    else:
+        merge_method = "inner"
+
+    medals_all = medals_2012.merge(medals_2008, how=merge_method,
+        left_on="Country", right_on="Country")
+    medals_all = medals_all.merge(medals_2016, how=merge_method,
+        left_on="Country", right_on="Country")
+    medals_all = medals_all.merge(medals_2004, how=merge_method,
+        left_on="Country", right_on="Country")
 
     if output_path != None:
         medals_all.to_csv(output_path, index=False)
@@ -118,8 +127,8 @@ def clean_medal_data(path_orig, output_path=None):
         medals: cleaned dataframe.
     '''
     medals = pd.read_csv(path_orig)
-    independents_index = medals.index[medals['Country'] == "Independent Olympic Athletes"].item()
-    medals.drop(independents_index, axis = 0, inplace = True)
+    # independents_index = medals.index[medals['Country'] == "Independent Olympic Athletes"].item()
+    # medals.drop(independents_index, axis = 0, inplace = True)
     medals = medals.fillna(0)
 
     if output_path != None:
