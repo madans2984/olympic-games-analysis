@@ -29,15 +29,6 @@ def medals_plot(df, sort, medal):
                         )
     fig.show()
 
-def medals_plot_year(df, year, sort, medal):
-    """
-    """
-    if sort == "GDP":
-        fig = px.scatter(df, x = df[f"{sort}-{year}"], y = df[f"{medal}-{year}"], trendline="ols", labels={f"{sort}-{year}" : "GDP (per capita) in dollars", f"{medal}-{year}" : f"{medal} Olympic medals"}, title=f"{sort} vs {medal} medals in {year}", hover_data=['Country'], log_x=False)
-    else:
-        fig = px.scatter(df, x = df[f"{sort}-{year}"], y = df[f"{medal}-{year}"], trendline="ols", labels={f"{sort}-{year}" : "Population (in thousands)", f"{medal}-{year}" : f"{medal} Olympic medals"}, title=f"{sort} vs {medal} medals in {year}", hover_data=['Country'], log_x=True)
-    fig.show()
-
 def context_plot(df, sort1="GDP", sort2="Pop"):
     """
     """
@@ -48,10 +39,10 @@ def context_plot(df, sort1="GDP", sort2="Pop"):
                      trendline="ols",
                      labels={f"{sort1}" : "GDP (per capita) in dollars",
                              f"{sort2}" : "Population (in thousands)"},
-                     title=f"GDP (per capita) vs population in",
+                     title=f"GDP (per capita) vs population",
                      hover_data=["Country"],
                      log_x=True,
-                     log_y=True,
+                     log_y=False,
                      color = "Year"
                     )
     fig.show()
