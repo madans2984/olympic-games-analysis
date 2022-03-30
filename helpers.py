@@ -208,7 +208,7 @@ def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
     '''
     gdp_total = pd.read_csv(path_orig)
     if clean_pop_data_path == None:
-        population = clean_population_data("population_original.csv")
+        population = clean_population_data("data/population_original.csv")
     else:
         population = pd.read_csv(clean_pop_data_path)
 
