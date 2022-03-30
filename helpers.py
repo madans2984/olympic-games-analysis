@@ -4,17 +4,16 @@ from bs4 import BeautifulSoup # library to parse HTML documents
 # get the response in the form of html
 def table_scrape(url, index=0):
     """
-    This functions takes a string representing the url of a wikipedia article
-    and by default returns the first table on the page. If there are multiple
-    tables and the return needs to be modified the index is an integer which
-    represents the index of the table which needs to be scraped.
+    Scrapes a single table from a wikipedia page using the url and the index of
+    the table on the page that should be scraped (defaults to index 0, the
+    first table).
 
     Args:
         url: string representing the url of a wikipedia article.
-        index: index of the table on the wikipedia page.
+        index: index of the table on the wikipedia page (optional).
 
     Returns:
-        pandas dataframe consisting of data in the wikitable.
+        A pandas dataframe consisting of the data in the wikitable.
     """
     wikiurl = url
     table_class = "wikitable sortable jquery-tablesorter"
@@ -32,33 +31,11 @@ def table_scrape(url, index=0):
         print("Error: This table should not be scraped due to its status" \
               " code.")
 
-# def medal_clean(df, year, host):
-#     """
-#     This functions takes in a data frame of the medals tables from wikipedia
-#     and cleans it to be easier to read.
-
-#     Args:
-#         df: data frame containing medals table from wikipedia
-#         year: integer representing the year of the olympic games
-
-#     Returns:
-#         cleaned dataframe
-#     """
-#     # renaming columns to have the year in the title
-#     df.rename(columns = {"Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
-#         "Bronze": f"Bronze-{year}", "Total": f"Total-{year}"}, inplace = True)
-#     # dropping rank column because it's not relevant for our question
-#     df.drop(["Rank"], axis = 1, inplace = True)
-#     df.replace({f"{host}*" : f"{host}"}, inplace = True)
-#     df[f"Weighted-{year}"] = df[f"Gold-{year}"] * 3 + df[f"Silver-{year}"] * 2 + df[f"Bronze-{year}"] * 1
-
-#     # removing final row containing total number of countries
-#     df = df[:-1]
-#     return df
 
 def scrape_medal_table(url, year, host):
     """
-    Convert the medal table on the wikipedia page for an olympic games to a pandas dataframe.
+    Convert the medal table on the wikipedia page for an olympic games to a
+    pandas dataframe.
 
     Makes each column (other than "Country") preface with the year of the games.
     """
@@ -75,6 +52,7 @@ def scrape_medal_table(url, year, host):
     table = table[:-1]
     return table
 
+
 def scrape_medal_data(output_path=None):
     '''
     Scrapes medal data for desired years from Wikipedia and merges them into
@@ -84,7 +62,7 @@ def scrape_medal_data(output_path=None):
         output_path: name of file dataframe is saved to.
     
     Returns:
-        medals_all: merged dataframe.
+        The merged dataframe.
     '''
     pg_2004 = "https://en.m.wikipedia.org/wiki/2004_Summer_Olympics_medal_table"
     pg_2008 = "https://en.m.wikipedia.org/wiki/2008_Summer_Olympics_medal_table"
@@ -120,7 +98,7 @@ def clean_medal_data(path_orig, output_path=None):
         output_path: name of file dataframe is saved to.
 
     Returns:
-        medals: cleaned dataframe.
+        The cleaned medal data dataframe.
     '''
     medals = pd.read_csv(path_orig)
     # independents_index = medals.index[medals['Country'] == "Independent Olympic Athletes"].item()
@@ -139,7 +117,7 @@ def scrape_population_data(output_path=None):
         output_path: name of file dataframe is saved to.
     
     Returns:
-        population: dataframe.
+        Dataframe containing scraped population data.
     '''
     wikipedia_page = ("https://en.wikipedia.org/wiki/List_of_countries_by_past_"
     "and_projected_future_population#Estimates_between_the_years_1985_and_2015_"
@@ -153,20 +131,15 @@ def scrape_population_data(output_path=None):
 def clean_population_data(filepath_original, filepath_result=None):
     '''
     Clean population data from wikipedia by removing unnecessary years and
-    percentages of population to leave whole numbers. The closest years'
-    population was used for each year of the Olympics(i.e. population data in
-    2005 was used for the Olympic Games in 2004, population data in 2010 was
-    used for the Games in both 2008 and 2010, and population data in 2015 was
-    used for 2016. Population columns were renamed to correspond with Olympic
-    Games' years. Special cases: renamed Great Britain as United Kingdom and
-    Chinese Taipei as Taiwan, as well as summed populations of Serbia and
-    Montenegro.
+    percentages of population to leave whole numbers.
+    
+    The closest years' population was used for each year of the Olympics (i.e. population data in 2005 was used for the Olympic Games in 2004, population data in 2010 was used for the Games in both 2008 and 2010, and population data in 2015 was used for 2016. Population columns were renamed to correspond with Olympic Games' years. Special cases: renamed Great Britain as United Kingdom and Chinese Taipei as Taiwan, as well as added a new row with the summed populations of Serbia and Montenegro because they compete jointly.
     
     Args:
         output_path: name of file dataframe is saved to.
     
     Returns:
-        population: dataframe.
+        The cleaned population dataframe.
     '''
     population = pd.read_csv(filepath_original)
     # dropping unnecessary years
@@ -201,7 +174,7 @@ def scrape_gdp_data(output_path=None):
         output_path: name of file dataframe is saved to.
     
     Returns:
-        gdp_total: dataframe.
+        A dataframe containing the scraped GDP data.
     '''
     wikipedia_page = ("https://en.wikipedia.org/wiki/"
         "List_of_countries_by_past_and_projected_GDP_(PPP)_per_capita")
@@ -217,11 +190,13 @@ def scrape_gdp_data(output_path=None):
 
 def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
     '''
-    Clean GDP data by dropping all unnecessary years. Special cases: renamed
-    Great Britain as United Kingdom and Chinese Taipei as Taiwan; use the UN's
-    GDP per capita for Cuba and North Korea; get weighted averages of GDP per
-    capita values for Serbia and Monetenegro to combine into single value per
-    year.
+    Clean GDP data by dropping unnecessary years, renaming columns, and adding
+    missing competitors. 
+    
+    Special cases: renamed Great Britain as United Kingdom and Chinese Taipei
+    as Taiwan; use the UN's GDP per capita for Cuba and North Korea; get
+    weighted averages of GDP per capita values for Serbia and Monetenegro to
+    combine into single value per year.
     
     Args:
         clean_pop_data_path: path of cleaned dataframe:
@@ -229,7 +204,7 @@ def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
         path_result: name of file dataframe is saved to.
 
     Returns:
-        gdp_total: cleaned dataframe.
+        Cleaned GDP dataframe.
     '''
     gdp_total = pd.read_csv(path_orig)
     if clean_pop_data_path == None:
