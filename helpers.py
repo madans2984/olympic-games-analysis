@@ -53,7 +53,7 @@ def scrape_medal_table(url, year, host):
     return table
 
 
-def scrape_medal_data(output_path=None):
+def scrape_medal_data(output_path=None, include_NaNs=True):
     '''
     Scrapes medal data for desired years from Wikipedia and merges them into
     one dataframe.
