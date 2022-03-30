@@ -75,7 +75,6 @@ def scrape_medal_table(url, year, host):
     table = table[:-1]
     return table
 
-<<<<<<< HEAD
 def scrape_medal_data(output_path=None):
     '''
     Scrapes medal data for desired years from Wikipedia and merges them into
@@ -87,9 +86,6 @@ def scrape_medal_data(output_path=None):
     Returns:
         medals_all: merged dataframe.
     '''
-=======
-def scrape_medal_data(output_path=None, include_NaNs=True):
->>>>>>> f19abd2906e96fbcd863fffa7a39834e613ab4f0
     pg_2004 = "https://en.m.wikipedia.org/wiki/2004_Summer_Olympics_medal_table"
     pg_2008 = "https://en.m.wikipedia.org/wiki/2008_Summer_Olympics_medal_table"
     pg_2012 = "https://en.m.wikipedia.org/wiki/2012_Summer_Olympics_medal_table"
