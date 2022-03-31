@@ -12,7 +12,8 @@ def medals_plot(df, sort, medal):
                          title=f"{sort} vs {medal} medals",
                          hover_data=["Country", "Year"],
                          log_x=False,
-                         color = "Year"
+                         color = "Year",
+                         facet_col = "Year"
                         )
     else:
         fig = px.scatter(
@@ -25,7 +26,8 @@ def medals_plot(df, sort, medal):
                          title=f"{sort} vs {medal} medals",
                          hover_data=["Country", "Year"],
                          log_x=True,
-                         color = "Year"
+                         color = "Year",
+                         facet_col = "Year"
                         )
     fig.show()
 
@@ -43,7 +45,8 @@ def context_plot(df, sort1="GDP", sort2="Pop"):
                      hover_data=["Country"],
                      log_x=True,
                      log_y=False,
-                     color = "Year"
+                     color = "Year",
+                     facet_col = "Year"
                     )
     fig.show()
     
