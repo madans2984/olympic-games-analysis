@@ -1,6 +1,7 @@
 import pandas as pd # library for data analysis
 import requests # library to handle requests
 from bs4 import BeautifulSoup # library to parse HTML documents
+import re
 # get the response in the form of html
 def table_scrape(url, index=0):
     """
@@ -252,32 +253,86 @@ def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
         gdp_total.to_csv(path_result, index=False)
     return gdp_total
 
-def make_sum_row(dataframe, country1_name, country2_name):
-    col_list = list(dataframe.columns)[1:]
-    country1 = dataframe.loc[dataframe["Country"] == country1_name]
-    country2 = dataframe.loc[dataframe["Country"] == country2_name]
-    new_name = country1_name + " and " + country2_name
-    new_row = {"Country":new_name}
-    for col in col_list:
-        new_row[col] = country1[col].item() + country2[col].item()
-    return new_row
+# def make_sum_row(dataframe, country1_name, country2_name):
+#     col_list = list(dataframe.columns)[1:]
+#     country1 = dataframe.loc[dataframe["Country"] == country1_name]
+#     country2 = dataframe.loc[dataframe["Country"] == country2_name]
+#     new_name = country1_name + " and " + country2_name
+#     new_row = {"Country":new_name}
+#     for col in col_list:
+#         new_row[col] = country1[col].item() + country2[col].item()
+#     return new_row
 
-def make_weighted_ave_row(weights_df, vals_df, country1_name, country2_name):
-    weights_col_list = list(weights_df.columns)[1:]
-    vals_col_list = list(vals_df.columns)[1:]
-    country1_weights = weights_df.loc[weights_df["Country"] == country1_name]
-    country2_weights = weights_df.loc[weights_df["Country"] == country2_name]
-    country1_vals = vals_df.loc[vals_df["Country"] == country1_name]
-    country2_vals = vals_df.loc[vals_df["Country"] == country2_name]
-    new_name = country1_name + " and " + country2_name
-    new_row = {"Country":new_name}
-    for weight_col, val_col in zip(weights_col_list, vals_col_list):
-        weight1 = country1_weights[weight_col].item()
-        val1 = country1_vals[val_col].item()
-        weight2 = country2_weights[weight_col].item()
-        val2 = country2_vals[val_col].item()
-        new_row[val_col] = (weight1*val1 + weight2*val2)//(val1+val2)
-    return new_row
+# def make_weighted_ave_row(weights_df, vals_df, country1_name, country2_name):
+#     weights_col_list = list(weights_df.columns)[1:]
+#     vals_col_list = list(vals_df.columns)[1:]
+#     country1_weights = weights_df.loc[weights_df["Country"] == country1_name]
+#     country2_weights = weights_df.loc[weights_df["Country"] == country2_name]
+#     country1_vals = vals_df.loc[vals_df["Country"] == country1_name]
+#     country2_vals = vals_df.loc[vals_df["Country"] == country2_name]
+#     new_name = country1_name + " and " + country2_name
+#     new_row = {"Country":new_name}
+#     for weight_col, val_col in zip(weights_col_list, vals_col_list):
+#         weight1 = country1_weights[weight_col].item()
+#         val1 = country1_vals[val_col].item()
+#         weight2 = country2_weights[weight_col].item()
+#         val2 = country2_vals[val_col].item()
+#         new_row[val_col] = (weight1*val1 + weight2*val2)//(val1+val2)
+#     return new_row
+
+def scrape_athlete_table(url, table_num, year):
+    response = requests.get(url)
+    # status code must be 200 to legally scrape
+    if response.status_code == 200:
+        whole_page = BeautifulSoup(response.text, "html.parser")
+        tables = whole_page.findAll("table",{"class": "wikitable"})
+        soup = tables[table_num]
+        for script in soup(["script", "style"]):
+            script.extract()
+
+        text = soup.get_text()
+
+        # break into lines and remove leading and trailing space on each
+        lines = (line.strip() for line in text.splitlines())
+        # break multi-headlines into a line each
+        chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
+        # drop blank lines
+        text = ';'.join(chunk for chunk in chunks if chunk)
+    else:
+        print("Error: This table should not be scraped due to its status" \
+          " code.")
+
+    text = text.replace(" (host)","")
+    text = text.replace("(",",")
+    text = text.replace(")","")
+    text = text.replace("Participating National Olympic Committees;","")
+    text = text.replace("'","")
+    text = text.replace(" athletes","")
+
+    text = re.sub("[\(\[].*?[\)\]]", "", text)
+
+    df = pd.DataFrame([x.split(',') for x in text.split(';')])
+    df.rename(columns = {0: "Country", 1: f"Athletes-{year}"}, inplace = True)
+
+    return df
+
+def scrape_athlete_data(output_path=None):
+    pg_2004 = ["https://en.wikipedia.org/wiki/2004_Summer_Olympics", 1]
+    pg_2008 = ["https://en.wikipedia.org/wiki/2008_Summer_Olympics", 5]
+    pg_2012 = ["https://en.wikipedia.org/wiki/2012_Summer_Olympics", 1]
+    pg_2016 = ["https://en.wikipedia.org/wiki/2016_Summer_Olympics", 2]
+
+    df_2004 = scrape_athlete_table(pg_2004[0], pg_2004[1], 2004)
+    df_2008 = scrape_athlete_table(pg_2008[0], pg_2008[1], 2008)
+    df_2012 = scrape_athlete_table(pg_2012[0], pg_2012[1], 2012)
+    df_2016 = scrape_athlete_table(pg_2016[0], pg_2016[1], 2016)
+
+    all_athlete_dfs = [df_2004, df_2008, df_2012, df_2016]
+    total = merge_dataframes(all_athlete_dfs)
+
+    if output_path != None:
+        total.to_csv(output_path, index=False)
+    return total
 
 
 def merge_data(medals_df, pop_df, gdp_df, output_path=None):
@@ -297,6 +352,15 @@ def merge_data(medals_df, pop_df, gdp_df, output_path=None):
     total = medals_df.merge(gdp_df,how="left",left_on="Country",right_on="Country")
     total = total.merge(pop_df,how="left",left_on="Country",right_on="Country")
 
+    if output_path != None:
+        total.to_csv(output_path, index=False)
+    return total
+
+def merge_dataframes(df_list, output_path=None, method="left", on="Country"):
+    total = df_list[0]
+    for df in df_list[1:]:
+        total = total.merge(df, how=method, left_on=on, right_on = on)
+    
     if output_path != None:
         total.to_csv(output_path, index=False)
     return total
