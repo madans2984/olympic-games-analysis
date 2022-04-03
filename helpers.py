@@ -1,6 +1,7 @@
 import pandas as pd # library for data analysis
 import requests # library to handle requests
 from bs4 import BeautifulSoup # library to parse HTML documents
+import grama as gr # library for data cleaning
 # get the response in the form of html
 def table_scrape(url, index=0):
     """
@@ -300,3 +301,34 @@ def merge_data(medals_df, pop_df, gdp_df, output_path=None):
     if output_path != None:
         total.to_csv(output_path, index=False)
     return total
+
+def pivot(new_data, data_frame):
+    new_data = (
+    data_frame
+    >> gr.tf_pivot_longer(
+        columns=["Gold-2004", "Silver-2004", "Bronze-2004", "Total-2004", "Weighted-2004", "GDP-2004", "Pop-2004", "Athletes-2004",
+                 "Gold-2008", "Silver-2008", "Bronze-2008", "Total-2008", "Weighted-2008", "GDP-2008", "Pop-2008", "Athletes-2008",
+                 "Gold-2012", "Silver-2012", "Bronze-2012", "Total-2012", "Weighted-2012", "GDP-2012", "Pop-2012", "Athletes-2012",
+                 "Gold-2016", "Silver-2016", "Bronze-2016", "Total-2016", "Weighted-2016", "GDP-2016", "Pop-2016", "Athletes-2016"],
+        names_to=("Var"),
+        values_to="val",
+    )
+    >> gr.tf_separate(
+        column="Var",
+        into=["Type", "Year"],
+        sep="-",
+    )
+    >> gr.tf_pivot_wider(
+        names_from = "Type",
+        values_from = "val"
+    )
+)
+    new_data["Success Rate"] = new_data["Total"]/new_data["Athletes"]
+
+def average_data(new_data, data_frame):
+    new_data = pd.DataFrame()
+    new_data["Country"] = data_frame["Country"]
+    new_data["Average Total"] = (data_frame[f"Total-2004"] + data_frame["Total-2008"] + data_frame["Total-2012"] + data_frame["Total-2016"]) / 4
+    new_data["Average GDP"] = (data_frame[f"GDP-2004"] + data_frame["GDP-2008"] + data_frame["GDP-2012"] + data_frame["GDP-2016"]) / 4
+    new_data["Average Pop"] = (data_frame[f"Pop-2004"] + data_frame["Pop-2008"] + data_frame["Pop-2012"] + data_frame["Pop-2016"]) / 4 * 1000
+    new_data["Average Athletes"] = (data_frame[f"Athletes-2004"] + data_frame["Athletes-2008"] + data_frame["Athletes-2012"] + data_frame["Athletes-2016"]) / 4
