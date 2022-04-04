@@ -20,7 +20,7 @@ def medals_plot(data_frame, sort, medal):
         A plotly figure of the input information.
     """
     if sort == "GDP":
-        # creating specific labels for GDP per capita graphs
+        # Create specific labels for GDP per capita graphs
         fig = px.scatter(
             data_frame,
             x=data_frame["GDP"],
@@ -35,7 +35,7 @@ def medals_plot(data_frame, sort, medal):
             facet_col="Year"
         )
     elif sort == "Pop":
-        # creating specific labels for Pop graphs
+        # Create specific labels for Pop graphs
         fig = px.scatter(
             data_frame,
             x=data_frame["Pop"],
@@ -50,7 +50,7 @@ def medals_plot(data_frame, sort, medal):
             facet_col="Year"
         )
     else:
-        # creating specific labels for Athletes graphs
+        # Create specific labels for Athletes graphs
         fig = px.scatter(
             data_frame,
             x=data_frame["Athletes"],
@@ -78,7 +78,7 @@ def context_plot(data_frame, sort1="GDP", sort2="Pop"):
     Returns:
         A plotly figure of the input information.
     """
-    # creating plot contextualizing GDP per capita and population
+    # Create plot contextualizing GDP per capita and population
     fig = px.scatter(
         data_frame,
         x=data_frame[f"{sort2}"],
@@ -107,10 +107,10 @@ def model_check(data_frame, equation):
     Returns:
         Summary of model fit statistics.
     """
-    # creating model
+    # Create model
     mod = smf.ols(formula=f"{equation}", data=data_frame)
     res = mod.fit()
-    # printing summary of model fit stats
+    # Print summary of model fit stats
     print(res.summary())
 
 
@@ -128,7 +128,7 @@ def average_medals_plot(data_frame, sort, medal):
         A plotly figure of the input information.
     """
     if sort == "Average GDP":
-        # creating specific labels for average GDP per capita graphs
+        # Create specific labels for average GDP per capita graphs
         fig = px.scatter(
             data_frame,
             x=data_frame["Average GDP"],
@@ -141,7 +141,7 @@ def average_medals_plot(data_frame, sort, medal):
             log_x=False,
         )
     elif sort == "Average Pop":
-        # creating specific labels for average pop graphs
+        # Create specific labels for average pop graphs
         fig = px.scatter(
             data_frame,
             x=data_frame["Average Pop"],
@@ -154,7 +154,7 @@ def average_medals_plot(data_frame, sort, medal):
             log_x=True,
         )
     else:
-        # creating specific labels for average athletes graphs
+        # Create specific labels for average athletes graphs
         fig = px.scatter(
             data_frame,
             x=data_frame["Average Athletes"],
@@ -180,7 +180,7 @@ def average_context_plot(data_frame, sort1="Average GDP", sort2="Average Pop"):
     Returns:
         A plotly figure of the input information.
     """
-    # creating plot contextualizing average GDP per capita and average population
+    # Create plot contextualizing average GDP per capita and average population
     fig = px.scatter(
         data_frame,
         x=data_frame[f"{sort2}"],
