@@ -71,6 +71,10 @@ def test_merge_dataframe():
 def test_pivot():
     """
     Test the pivot() function in helpers.py.
+    when we saved our CSVs the data type of year was automatically changed
+    from object to int64. As a work around to this, we save our CSV and then
+    read it back in for the test. In our actual files, we never save the pivot
+    data as a csv so this doesn't affect the actual function.
     """
     df_clean = pd.read_csv("test_data/pivoting_test_data_clean.csv")
     df_pivot = pd.read_csv("test_data/pivoting_test_data.csv")
