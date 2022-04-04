@@ -54,6 +54,6 @@ def test_pivot():
     assert df_clean.equals(df_pivot)
 
 def test_average():
-    df_clean = pd.read_csv("test_data/averaging_test_data_clean.csv")
-    df_average = pd.read_csv("test_data/averaging_test_data.csv")
-    assert df_clean.equals(average_data(df_average))
+    df_done = pd.read_csv("test_data/averaging_test_data_done.csv")
+    df_raw = pd.read_csv("test_data/averaging_test_data.csv")
+    assert df_done.equals(average_data(df_raw))
