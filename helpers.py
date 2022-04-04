@@ -160,8 +160,8 @@ def clean_population_data(filepath_original, filepath_result=None):
     population.replace({"United Kingdom" : "Great Britain"}, inplace = True)
     population.replace({"Taiwan" : "Chinese Taipei"}, inplace = True)
 
-    s_m_row = make_sum_row(population, "Serbia", "Montenegro")
-    population = population.append(s_m_row, ignore_index=True)
+#    s_m_row = make_sum_row(population, "Serbia", "Montenegro")
+#    population = population.append(s_m_row, ignore_index=True)
 
     if filepath_result != None:
         population.to_csv(filepath_result, index=False)
@@ -246,9 +246,9 @@ def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
         "GDP-2016": 642}
     gdp_total = gdp_total.append(north_korea_row, ignore_index=True)
 
-    s_m_row = make_weighted_ave_row(population, gdp_total, 
-        "Serbia", "Montenegro")
-    gdp_total = gdp_total.append(s_m_row, ignore_index=True)
+#    s_m_row = make_weighted_ave_row(population, gdp_total, 
+#        "Serbia", "Montenegro")
+#    gdp_total = gdp_total.append(s_m_row, ignore_index=True)
 
     if path_result != None:
         gdp_total.to_csv(path_result, index=False)
@@ -368,8 +368,8 @@ def merge_dataframes(df_list, output_path=None, method="left", on="Country"):
     return total
 
 
-def pivot(new_data, data_frame):
-    new_data = (
+def pivot(data_frame):
+    od = (
     data_frame
     >> gr.tf_pivot_longer(
         columns=["Gold-2004", "Silver-2004", "Bronze-2004", "Total-2004", "Weighted-2004", "GDP-2004", "Pop-2004", "Athletes-2004",
