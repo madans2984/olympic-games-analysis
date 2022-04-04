@@ -81,7 +81,7 @@ def test_pivot():
     df_pivot = pivot(df_pivot)
     df_pivot.to_csv("test_data/pivoting_test_data_intermediate.csv", index=False)
     df_pivot = pd.read_csv("test_data/pivoting_test_data_intermediate.csv")
-    pd.testing.assert_frame_equal(df_clean, df_pivot) 
+    pd.testing.assert_frame_equal(df_clean, df_pivot)
 
 
 def test_average_data():
