@@ -1,4 +1,6 @@
 import plotly.express as px
+import statsmodels.formula.api as smf
+
 
 def medals_plot(df, sort, medal):
     if sort == "GDP":
@@ -9,27 +11,42 @@ def medals_plot(df, sort, medal):
                          trendline="ols",
                          labels={f"{sort}" :"GDP (per capita) in dollars",
                                  f"{medal}" : f"{medal} Olympic medals"},
-                         title=f"{sort} vs {medal} medals",
+                         title=f"GDP (per capita) vs {medal} medals",
                          hover_data=["Country", "Year"],
                          log_x=False,
                          color = "Year",
                          facet_col = "Year"
                         )
-    else:
+    elif sort == "Pop":
         fig = px.scatter(
                          df,
-                         x = df[f"{sort}"],
+                         x = df["Pop"],
                          y = df[f"{medal}"],
                          trendline="ols",
                          labels={f"{sort}" : "Population (in thousands)",
                                  f"{medal}" : f"{medal} Olympic medals"},
-                         title=f"{sort} vs {medal} medals",
+                         title=f"Population vs {medal} medals",
                          hover_data=["Country", "Year"],
                          log_x=True,
                          color = "Year",
                          facet_col = "Year"
                         )
+    else:
+        fig = px.scatter(
+                 df,
+                 x = df["Athletes"],
+                 y = df[f"{medal}"],
+                 trendline="ols",
+                 labels={"Athletes" :"Total Number of Competitors",
+                 f"{medal}" : f"{medal} Number of Medals"},
+                 title=f"Number of Competitors vs Number of {medal} Medals",
+                 hover_data=["Country"],
+                 log_x=True,
+                 facet_col= "Year",
+                 color = "Year"
+                )    
     fig.show()
+
 
 def context_plot(df, sort1="GDP", sort2="Pop"):
     """
@@ -50,3 +67,7 @@ def context_plot(df, sort1="GDP", sort2="Pop"):
                     )
     fig.show()
     
+def model_check(data_frame, equation):
+        mod = smf.ols(formula=f"{equation}", data=data_frame)
+        res = mod.fit()
+        print(res.summary())
