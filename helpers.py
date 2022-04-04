@@ -2,7 +2,7 @@ import pandas as pd # library for data analysis
 import requests # library to handle requests
 from bs4 import BeautifulSoup # library to parse HTML documents
 import re
-import grama as gr # library for data cleaning
+# import grama as gr # library for data cleaning
 # get the response in the form of html
 def table_scrape(url, index=0):
     """
@@ -17,9 +17,7 @@ def table_scrape(url, index=0):
     Returns:
         A pandas dataframe consisting of the data in the wikitable.
     """
-    wikiurl = url
-    table_class = "wikitable sortable jquery-tablesorter"
-    response = requests.get(wikiurl)
+    response = requests.get(url)
     # status code must be 200 to legally scrape
     if response.status_code == 200:
         # Parse data from the html into a beautifulsoup object
@@ -48,14 +46,13 @@ def scrape_medal_table(url, year, host):
     # dropping rank column because it's not relevant for our question
     table.drop(["Rank"], axis = 1, inplace = True)
     table.replace({f"{host}*" : f"{host}"}, inplace = True)
-    table[f"Weighted-{year}"] = table[f"Gold-{year}"] * 3 + table[f"Silver-{year}"] * 2 + table[f"Bronze-{year}"] * 1
 
     # removing final row containing total number of countries
     table = table[:-1]
     return table
 
 
-def scrape_medal_data(output_path=None, include_NaNs=True):
+def scrape_medal_data(output_path=None):
     '''
     Scrapes medal data for desired years from Wikipedia and merges them into
     one dataframe.
@@ -75,41 +72,12 @@ def scrape_medal_data(output_path=None, include_NaNs=True):
     medals_2012 = scrape_medal_table(pg_2012, "2012", "Great Britain")
     medals_2016 = scrape_medal_table(pg_2016, "2016", "Brazil")
 
-    if include_NaNs:
-        merge_method = "outer"
-    else:
-        merge_method = "inner"
-
-    medals_all = medals_2012.merge(medals_2008, how=merge_method,
-        left_on="Country", right_on="Country")
-    medals_all = medals_all.merge(medals_2016, how=merge_method,
-        left_on="Country", right_on="Country")
-    medals_all = medals_all.merge(medals_2004, how=merge_method,
-        left_on="Country", right_on="Country")
+    medals_all = merge_dataframes([medals_2004, medals_2008, medals_2012, medals_2016], method="inner")
 
     if output_path != None:
         medals_all.to_csv(output_path, index=False)
     return medals_all
 
-def clean_medal_data(path_orig, output_path=None):
-    '''
-    Clean the medal data by removing data for Independent Olympic Athletes.
-    
-    Args:
-        path_orig: path of dataframe to clean.
-        output_path: name of file dataframe is saved to.
-
-    Returns:
-        The cleaned medal data dataframe.
-    '''
-    medals = pd.read_csv(path_orig)
-    # independents_index = medals.index[medals['Country'] == "Independent Olympic Athletes"].item()
-    # medals.drop(independents_index, axis = 0, inplace = True)
-    medals = medals.fillna(0)
-
-    if output_path != None:
-        medals.to_csv(output_path, index=False)
-    return medals
 
 def scrape_population_data(output_path=None):
     '''
@@ -160,8 +128,8 @@ def clean_population_data(filepath_original, filepath_result=None):
     population.replace({"United Kingdom" : "Great Britain"}, inplace = True)
     population.replace({"Taiwan" : "Chinese Taipei"}, inplace = True)
 
-    s_m_row = make_sum_row(population, "Serbia", "Montenegro")
-    population = population.append(s_m_row, ignore_index=True)
+    # s_m_row = make_sum_row(population, "Serbia", "Montenegro")
+    # population = population.append(s_m_row, ignore_index=True)
 
     if filepath_result != None:
         population.to_csv(filepath_result, index=False)
@@ -246,40 +214,9 @@ def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
         "GDP-2016": 642}
     gdp_total = gdp_total.append(north_korea_row, ignore_index=True)
 
-    s_m_row = make_weighted_ave_row(population, gdp_total, 
-        "Serbia", "Montenegro")
-    gdp_total = gdp_total.append(s_m_row, ignore_index=True)
-
     if path_result != None:
         gdp_total.to_csv(path_result, index=False)
     return gdp_total
-
-# def make_sum_row(dataframe, country1_name, country2_name):
-#     col_list = list(dataframe.columns)[1:]
-#     country1 = dataframe.loc[dataframe["Country"] == country1_name]
-#     country2 = dataframe.loc[dataframe["Country"] == country2_name]
-#     new_name = country1_name + " and " + country2_name
-#     new_row = {"Country":new_name}
-#     for col in col_list:
-#         new_row[col] = country1[col].item() + country2[col].item()
-#     return new_row
-
-# def make_weighted_ave_row(weights_df, vals_df, country1_name, country2_name):
-#     weights_col_list = list(weights_df.columns)[1:]
-#     vals_col_list = list(vals_df.columns)[1:]
-#     country1_weights = weights_df.loc[weights_df["Country"] == country1_name]
-#     country2_weights = weights_df.loc[weights_df["Country"] == country2_name]
-#     country1_vals = vals_df.loc[vals_df["Country"] == country1_name]
-#     country2_vals = vals_df.loc[vals_df["Country"] == country2_name]
-#     new_name = country1_name + " and " + country2_name
-#     new_row = {"Country":new_name}
-#     for weight_col, val_col in zip(weights_col_list, vals_col_list):
-#         weight1 = country1_weights[weight_col].item()
-#         val1 = country1_vals[val_col].item()
-#         weight2 = country2_weights[weight_col].item()
-#         val2 = country2_vals[val_col].item()
-#         new_row[val_col] = (weight1*val1 + weight2*val2)//(val1+val2)
-#     return new_row
 
 def scrape_athlete_table(url, table_num, year):
     response = requests.get(url)
@@ -336,7 +273,7 @@ def scrape_athlete_data(output_path=None):
     return total
 
 
-def merge_data(medals_df, pop_df, gdp_df, output_path=None):
+def merge_data(medals_df, pop_df, gdp_df, output_path=None):        ## OBSOLETE - DELETE ------
     '''
     Merge medals, population, and gdp data into single dataframe based on
     country.

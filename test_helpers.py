@@ -6,22 +6,15 @@ from helpers import (
 )
 
 clean_medal_data_cases = [
-
+    "test_data/medals_original.csv", "test_data/medals_cleaned.csv"
 ]
 
 
-# @pytest.mark.parametrize("nucleotide,complement", clean_medal_data_cases)
-# def test_clean_medal_data(nucleotide, complement):
-#     """
-#     Test that each nucleotide is mapped to its correct complement.
-#     Given a single-character string representing a nucleotide that is "A", "T",
-#     "G", or "C", check that the get_complement function correctly maps the
-#     string to a single-character string representing the nucleotide's complement
-#     (also "A", "T", "G", or "C").
-#     Args:
-#         nucleotide: A single-character string equal to "A", "C", "T", or "G"
-#             representing a nucleotide.
-#         complement: A single-character string equal to "A", "C", "T", or "G"
-#             representing the expected complement of nucleotide.
-#     """
-#     assert clean_medal_data(nucleotide) == complement
+@pytest.mark.parametrize("raw,cleaned", clean_medal_data_cases)
+def test_clean_medal_data(raw, cleaned):
+   df_raw = pd.read_csv(raw)
+   df_cleaned = pd.read_csv(cleaned)
+   assert df_cleaned.equals(clean_medal_data(df_raw))
+
+
+   # try assert_frame_equal
