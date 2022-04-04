@@ -1,3 +1,7 @@
+"""
+Functions for plotting and creating models
+"""
+
 import plotly.express as px
 import statsmodels.formula.api as smf
 

@@ -1,3 +1,6 @@
+"""
+Functions for scraping and cleaning olympics data
+"""
 import pandas as pd # library for data analysis
 import requests # library to handle requests
 from bs4 import BeautifulSoup # library to parse HTML documents
@@ -23,10 +26,10 @@ def table_scrape(url, index=0):
         # Parse data from the html into a beautifulsoup object
         soup = BeautifulSoup(response.text, "html.parser")
         tables=soup.findAll("table",{"class": "wikitable"})
-        df=pd.read_html(str(tables[index]))
+        data_frame=pd.read_html(str(tables[index]))
         # Convert list to dataframe
-        df=pd.DataFrame(df[0])
-        return df
+        data_frame=pd.DataFrame(data_frame[0])
+        return data_frame
     else:
         print("Error: This table should not be scraped due to its status" \
               " code.")
@@ -41,7 +44,7 @@ def scrape_medal_table(url, year, host):
     """
     table = table_scrape(url)
     # Rename columns to have the year in the title
-    table.rename(columns = {"NOC": "Country", "Nation": "Country", 
+    table.rename(columns = {"NOC": "Country", "Nation": "Country",
         "Gold": f"Gold-{year}", "Silver": f"Silver-{year}",
         "Bronze": f"Bronze-{year}", "Total": f"Total-{year}"}, inplace = True)
     # Drop rank column because it's not relevant for our question
@@ -79,7 +82,8 @@ def scrape_medal_data(output_path=None):
 
     # Merge the 4 dataframes into 1, only keeping countries that medalled in
     # all 4 years
-    medals_all = merge_dataframes([medals_2004, medals_2008, medals_2012, medals_2016], method="inner")
+    medals_all = merge_dataframes([medals_2004, medals_2008, medals_2012, medals_2016],
+    method="inner")
 
     # If a location to save a csv is given, save it there
     if output_path != None:
@@ -91,10 +95,10 @@ def scrape_medal_data(output_path=None):
 def scrape_population_data(output_path=None):
     """
     Scrape population data from wikipedia.
-    
+
     Args:
         output_path: name of file dataframe is saved to.
-    
+
     Returns:
         Dataframe containing scraped population data.
     """
@@ -131,7 +135,8 @@ def clean_population_data(input_path, output_path=None):
     """
     population = pd.read_csv(input_path)
     # Drop unnecessary years
-    population.drop(["1985", "1990", "1995", "2000", "%", "%.1", "%.2", "%.3", "%.4","%.5", "%.6"], axis = 1, inplace = True)
+    population.drop(["1985", "1990", "1995", "2000", "%", "%.1", "%.2", "%.3", "%.4","%.5", "%.6"],
+    axis = 1, inplace = True)
     # Rename columns to be associated with the correct olympic years
     population.rename(columns = {"Country (or dependent territory)":"Country",
         "2005": "Pop-2004",
@@ -170,7 +175,7 @@ def scrape_gdp_data(output_path=None):
     gdp_2010s = table_scrape(wikipedia_page, 3)
 
     # Merge the dataframes
-    gdp_total = merge_dataframes([gdp_2000s, gdp_2010s], 
+    gdp_total = merge_dataframes([gdp_2000s, gdp_2010s],
         on="Country (or dependent territory)")
 
     # If a location to save a csv is given, save it there
@@ -183,7 +188,7 @@ def scrape_gdp_data(output_path=None):
 def clean_gdp_data(input_path, output_path=None, clean_pop_data_path=None):
     """
     Clean GDP data by dropping unnecessary years, renaming columns, and adding
-    missing competitors. 
+    missing competitors.
 
     Special cases: renamed Great Britain as United Kingdom and Chinese Taipei
     as Taiwan; use the UN's GDP per capita for Cuba and North Korea.
@@ -257,7 +262,7 @@ def scrape_athlete_table(url, table_num, year):
 
         # Break into lines and remove leading and trailing space on each
         lines = (line.strip() for line in text.splitlines())
-        chunks = (phrase.strip() for line in lines for phrase in 
+        chunks = (phrase.strip() for line in lines for phrase in
             line.split("  "))
         # Drop blank lines and separate lines with ";"
         text = ";".join(chunk for chunk in chunks if chunk)
@@ -286,10 +291,10 @@ def scrape_athlete_table(url, table_num, year):
 
     # Read text into dataframe with commas separating values into columns and
     # semicolons indicating the start of a new row
-    df = pd.DataFrame([x.split(',') for x in text.split(';')])
-    df.rename(columns = {0: "Country", 1: f"Athletes-{year}"}, inplace = True)
+    data_frame = pd.DataFrame([x.split(',') for x in text.split(';')])
+    data_frame.rename(columns = {0: "Country", 1: f"Athletes-{year}"}, inplace = True)
 
-    return df
+    return data_frame
 
 def scrape_athlete_data(output_path=None):
 
@@ -328,9 +333,9 @@ def merge_dataframes(df_list, output_path=None, method="left", on="Country"):
     # Initialize the master dataframe
     total = df_list[0]
     # Starting from the second, merge each dataframe into the ones before.
-    for df in df_list[1:]:
-        total = total.merge(df, how=method, left_on=on, right_on=on)
-    
+    for data_frame in df_list[1:]:
+        total = total.merge(data_frame, how=method, left_on=on, right_on=on)
+
     # If a location to save a csv is given, save it there
     if output_path != None:
         total.to_csv(output_path, index=False)
@@ -339,15 +344,25 @@ def merge_dataframes(df_list, output_path=None, method="left", on="Country"):
 
 
 def pivot(data_frame):
-    # setting new dataframe 
-    od = (
+    """
+    Pivot olympic dataframe into clean dataframe.
+
+    Args:
+        data_frame: pandas dataframe containing olympic data
+
+    Returns:
+        A dataframe containing the cleaned olympics data.
+    """
+    # creating new dataframe
+    new_data = (
     data_frame
     # creating variable column with names of column and values to new column
     >> gr.tf_pivot_longer(
-        columns=["Gold-2004", "Silver-2004", "Bronze-2004", "Total-2004", "GDP-2004", "Pop-2004", "Athletes-2004",
-                 "Gold-2008", "Silver-2008", "Bronze-2008", "Total-2008", "GDP-2008", "Pop-2008", "Athletes-2008",
-                 "Gold-2012", "Silver-2012", "Bronze-2012", "Total-2012", "GDP-2012", "Pop-2012", "Athletes-2012",
-                 "Gold-2016", "Silver-2016", "Bronze-2016", "Total-2016", "GDP-2016", "Pop-2016", "Athletes-2016"],
+        columns=["Gold-2004", "Silver-2004", "Bronze-2004", "Total-2004", "GDP-2004", "Pop-2004",
+        "Athletes-2004", "Gold-2008", "Silver-2008", "Bronze-2008", "Total-2008", "GDP-2008",
+        "Pop-2008", "Athletes-2008", "Gold-2012", "Silver-2012", "Bronze-2012", "Total-2012",
+        "GDP-2012", "Pop-2012", "Athletes-2012", "Gold-2016", "Silver-2016", "Bronze-2016",
+        "Total-2016", "GDP-2016", "Pop-2016", "Athletes-2016"],
         names_to=("Var"),
         values_to="val",
     )
@@ -364,18 +379,34 @@ def pivot(data_frame):
     )
 )
     # creating success rate column for new dataframe
-    od["Success Rate"] = od["Total"]/od["Athletes"]
-    return od
+    new_data["Success Rate"] = new_data["Total"]/new_data["Athletes"]
+    return new_data
 
 def average_data(data_frame):
+    """
+    Creating averages dataframe from olympics data
+
+    Args:
+        data_frame: pandas dataframe containing olympic data
+
+    Returns:
+        A dataframe containing the averages of the olympics data.
+    """
     # creating new dataframe
     new_data = pd.DataFrame()
     # setting country column as index
     new_data["Country"] = data_frame["Country"]
     # averaging all years and setting it to a new column
-    new_data["Average Total"] = (data_frame[f"Total-2004"] + data_frame["Total-2008"] + data_frame["Total-2012"] + data_frame["Total-2016"]) / 4
-    new_data["Average GDP"] = (data_frame[f"GDP-2004"] + data_frame["GDP-2008"] + data_frame["GDP-2012"] + data_frame["GDP-2016"]) / 4
+    new_data["Average Total"] = (data_frame["Total-2004"] + data_frame["Total-2008"] +
+    data_frame["Total-2012"] + data_frame["Total-2016"]) / 4
+
+    new_data["Average GDP"] = (data_frame["GDP-2004"] + data_frame["GDP-2008"] +
+    data_frame["GDP-2012"] + data_frame["GDP-2016"]) / 4
+
     # multiplying by 1000 to standardize population
-    new_data["Average Pop"] = (data_frame[f"Pop-2004"] + data_frame["Pop-2008"] + data_frame["Pop-2012"] + data_frame["Pop-2016"]) / 4 * 1000
-    new_data["Average Athletes"] = (data_frame[f"Athletes-2004"] + data_frame["Athletes-2008"] + data_frame["Athletes-2012"] + data_frame["Athletes-2016"]) / 4
+    new_data["Average Pop"] = (data_frame["Pop-2004"] + data_frame["Pop-2008"] +
+    data_frame["Pop-2012"] + data_frame["Pop-2016"]) / 4 * 1000
+
+    new_data["Average Athletes"] = (data_frame["Athletes-2004"] +
+    data_frame["Athletes-2008"] + data_frame["Athletes-2012"] + data_frame["Athletes-2016"]) / 4
     return new_data
