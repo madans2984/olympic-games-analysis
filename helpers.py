@@ -339,34 +339,43 @@ def merge_dataframes(df_list, output_path=None, method="left", on="Country"):
 
 
 def pivot(data_frame):
+    # setting new dataframe 
     od = (
     data_frame
+    # creating variable column with names of column and values to new column
     >> gr.tf_pivot_longer(
-        columns=["Gold-2004", "Silver-2004", "Bronze-2004", "Total-2004", "Weighted-2004", "GDP-2004", "Pop-2004", "Athletes-2004",
-                 "Gold-2008", "Silver-2008", "Bronze-2008", "Total-2008", "Weighted-2008", "GDP-2008", "Pop-2008", "Athletes-2008",
-                 "Gold-2012", "Silver-2012", "Bronze-2012", "Total-2012", "Weighted-2012", "GDP-2012", "Pop-2012", "Athletes-2012",
-                 "Gold-2016", "Silver-2016", "Bronze-2016", "Total-2016", "Weighted-2016", "GDP-2016", "Pop-2016", "Athletes-2016"],
+        columns=["Gold-2004", "Silver-2004", "Bronze-2004", "Total-2004", "GDP-2004", "Pop-2004", "Athletes-2004",
+                 "Gold-2008", "Silver-2008", "Bronze-2008", "Total-2008", "GDP-2008", "Pop-2008", "Athletes-2008",
+                 "Gold-2012", "Silver-2012", "Bronze-2012", "Total-2012", "GDP-2012", "Pop-2012", "Athletes-2012",
+                 "Gold-2016", "Silver-2016", "Bronze-2016", "Total-2016", "GDP-2016", "Pop-2016", "Athletes-2016"],
         names_to=("Var"),
         values_to="val",
     )
+    # separting type and year into two columns
     >> gr.tf_separate(
         column="Var",
         into=["Type", "Year"],
         sep="-",
     )
+    # setting values to different types
     >> gr.tf_pivot_wider(
         names_from = "Type",
         values_from = "val"
     )
 )
+    # creating success rate column for new dataframe
     od["Success Rate"] = od["Total"]/od["Athletes"]
     return od
 
 def average_data(data_frame):
+    # creating new dataframe
     new_data = pd.DataFrame()
+    # setting country column as index
     new_data["Country"] = data_frame["Country"]
+    # averaging all years and setting it to a new column
     new_data["Average Total"] = (data_frame[f"Total-2004"] + data_frame["Total-2008"] + data_frame["Total-2012"] + data_frame["Total-2016"]) / 4
     new_data["Average GDP"] = (data_frame[f"GDP-2004"] + data_frame["GDP-2008"] + data_frame["GDP-2012"] + data_frame["GDP-2016"]) / 4
+    # multiplying by 1000 to standardize population
     new_data["Average Pop"] = (data_frame[f"Pop-2004"] + data_frame["Pop-2008"] + data_frame["Pop-2012"] + data_frame["Pop-2016"]) / 4 * 1000
     new_data["Average Athletes"] = (data_frame[f"Athletes-2004"] + data_frame["Athletes-2008"] + data_frame["Athletes-2012"] + data_frame["Athletes-2016"]) / 4
     return new_data
