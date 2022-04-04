@@ -19,7 +19,7 @@ import re # regex library for removing text in square brackets
 import pandas as pd  # library for data analysis
 import requests  # library to handle requests
 from bs4 import BeautifulSoup  # library to parse HTML documents
-import grama as gr  # library for data cleaning
+# import grama as gr  # library for data cleaning
 
 
 def table_scrape(url, index=0):
@@ -31,7 +31,6 @@ def table_scrape(url, index=0):
     Args:
         url: string representing the url of a wikipedia article.
         index: index of the table on the wikipedia page (optional).
-
     Returns:
         A pandas dataframe consisting of the data in the wikitable.
     """
@@ -56,6 +55,16 @@ def scrape_medal_table(url, year, host):
     pandas dataframe.
 
     Makes each column (other than "Country") preface with the year of the games.
+
+    Args:
+        url: a string representing the wikipedia page for the olympics games to
+            scrape
+        year: an int or string representing the year of the olympic games page
+            to be scraped so that the athlete count column can be properly named
+        host: a string representing the host nation for that year, so that the
+            "*" next to the host country's name can be deleted
+    Returns:
+        A pandas dataframe containing the scraped medal table.
     """
     table = table_scrape(url)
     # Rename columns to have the year in the title
@@ -77,8 +86,7 @@ def scrape_medal_data(output_path=None):
     one dataframe.
 
     Args:
-        output_path: name of file dataframe is saved to.
-
+        output_path: name of file that the dataframe will save to (optional).
     Returns:
         The merged dataframe.
     """
@@ -112,8 +120,7 @@ def scrape_population_data(output_path=None):
     Scrape population data from wikipedia.
 
     Args:
-        output_path: name of file dataframe is saved to.
-
+        output_path: name of file that the dataframe will save to (optional).
     Returns:
         Dataframe containing scraped population data.
     """
@@ -143,8 +150,9 @@ def clean_population_data(input_path, output_path=None):
     as United Kingdom and Chinese Taipei as Taiwan.
 
     Args:
-        output_path: name of file dataframe is saved to.
-
+        input_path: a string representing the filepath of of the CSV of the
+            dataframe that needs to be cleaned.
+        output_path: name of file that the dataframe will save to (optional).
     Returns:
         The cleaned population dataframe.
     """
@@ -186,8 +194,7 @@ def scrape_gdp_data(output_path=None):
     Scrape the IMF's GDP per capita data from wikipedia.
 
     Args:
-        output_path: name of file dataframe is saved to.
-
+        output_path: name of file that the dataframe will save to (optional).
     Returns:
         A dataframe containing the scraped GDP data.
     """
@@ -217,9 +224,9 @@ def clean_gdp_data(input_path, output_path=None):
     as Taiwan; use the UN's GDP per capita for Cuba and North Korea.
 
     Args:
-        input_path: path of dataframe that needs to be cleaned
-        output_path: name of file dataframe is saved to.
-
+        input_path: a string representing the filepath of of the CSV of the
+            dataframe that needs to be cleaned.
+        output_path: name of file that the dataframe will save to (optional).
     Returns:
         Cleaned GDP dataframe.
     """
@@ -265,6 +272,21 @@ def clean_gdp_data(input_path, output_path=None):
 
 
 def scrape_athlete_table(url, table_num, year):
+    """
+    Convert the table on the wikipedia page for an olympic games that lists
+    countries and how many athletes they sent in parentheses to a pandas
+    dataframe.
+
+    Also prefaces the column with number of athletes with a the year of the games.
+
+    Args:
+        url: a string representing the wikipedia page for the olympics games to
+            scrape
+        table_num: an int representing the index of the table that contains the
+            relevant data
+        year: an int or string representing the year of the olympic games page
+            to be scraped so that the athlete count column can be properly named
+    """
     response = requests.get(url)
     # Status code must be 200 to legally scrape
     if response.status_code == 200:
@@ -318,7 +340,15 @@ def scrape_athlete_table(url, table_num, year):
 
 
 def scrape_athlete_data(output_path=None):
+    """
+    Scrapes the number of athletes sent to the olympics by each country for the
+    summer olympics 2004-2016 from Wikipedia and merges them into one dataframe.
 
+    Args:
+        output_path: name of file that the dataframe will save to (optional).
+    Returns:
+        The merged dataframe.
+    """
     #                            Wikipedia page               Table on page
     pg_2004 = ["https://en.wikipedia.org/wiki/2004_Summer_Olympics", 1]
     pg_2008 = ["https://en.wikipedia.org/wiki/2008_Summer_Olympics", 5]
@@ -348,9 +378,18 @@ def merge_dataframes(df_list, output_path=None, method="left",
     """
     Merge all dataframes in a list into one master dataframe by country.
 
-
-
-
+        Args:
+            df_list: a list of dataframes that should be merged
+            output_path: name of file that the dataframe will save to (optional)
+            method: a string representing what will used as the how arg for the
+                pandas DataFrame merge() function (default: is "left" meaning
+                keep all row in the datafram left of the one currently merging,
+                and don't keep rows that don't match the reference column in
+                the left dataframe)
+            merge_on: a string representing what will used as the how arg for
+                the pandas DataFrame merge() function (default: is "Country" meaning pandas will combine rows that have the same value in their column labeled "Country")
+        Returns:
+            The merged dataframe.s
     """
     # Initialize the master dataframe
     total = df_list[0]
@@ -371,7 +410,6 @@ def pivot(data_frame):
 
     Args:
         data_frame: pandas dataframe containing olympic data
-
     Returns:
         A dataframe containing the cleaned olympics data.
     """
@@ -414,7 +452,6 @@ def average_data(data_frame):
 
     Args:
         data_frame: pandas dataframe containing olympic data
-
     Returns:
         A dataframe containing the averages of the olympics data.
     """
