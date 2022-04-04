@@ -98,7 +98,7 @@ def context_plot(data_frame, sort1="GDP", sort2="Pop"):
 
 def model_check(data_frame, equation):
     """
-    Returns model fit statistics
+    Returns model fit statistics.
 
     Args:
         data_frame: pandas dataframe containing information
