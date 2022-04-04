@@ -57,10 +57,10 @@ def scrape_medal_data(output_path=None):
     """
     Scrapes medal data for desired years from Wikipedia and merges them into
     one dataframe.
-    
+
     Args:
         output_path: name of file dataframe is saved to.
-    
+
     Returns:
         The merged dataframe.
     """
@@ -69,7 +69,7 @@ def scrape_medal_data(output_path=None):
     pg_2008 = "https://en.m.wikipedia.org/wiki/2008_Summer_Olympics_medal_table"
     pg_2012 = "https://en.m.wikipedia.org/wiki/2012_Summer_Olympics_medal_table"
     pg_2016 = "https://en.wikipedia.org/wiki/2016_Summer_Olympics_medal_table"
-    
+
     # Scrape each page to a pandas dataframe, format with date, and remove "*"
     # next to each host country's name.
     medals_2004 = scrape_medal_table(pg_2004, "2004", "Greece")
@@ -115,12 +115,17 @@ def clean_population_data(input_path, output_path=None):
     """
     Clean population data from wikipedia by removing unnecessary years and
     percentages of population to leave whole numbers.
-    
-    The closest years' population was used for each year of the Olympics (i.e. population data in 2005 was used for the Olympic Games in 2004, population data in 2010 was used for the Games in both 2008 and 2010, and population data in 2015 was used for 2016. Population columns were renamed to correspond with Olympic Games' years. Special cases: renamed Great Britain as United Kingdom and Chinese Taipei as Taiwan, as well as added a new row with the summed populations of Serbia and Montenegro because they compete jointly.
-    
+
+    The closest years' population was used for each year of the Olympics (i.e.
+    population data in 2005 was used for the Olympic Games in 2004, population
+    data in 2010 was used for the Games in both 2008 and 2010, and population
+    data in 2015 was used for 2016. Population columns were renamed to
+    correspond with Olympic Games' years. Special cases: renamed Great Britain
+    as United Kingdom and Chinese Taipei as Taiwan.
+
     Args:
         output_path: name of file dataframe is saved to.
-    
+
     Returns:
         The cleaned population dataframe.
     """
@@ -151,10 +156,10 @@ def clean_population_data(input_path, output_path=None):
 def scrape_gdp_data(output_path=None):
     """
     Scrape the IMF's GDP per capita data from wikipedia.
-    
+
     Args:
         output_path: name of file dataframe is saved to.
-    
+
     Returns:
         A dataframe containing the scraped GDP data.
     """
@@ -163,7 +168,7 @@ def scrape_gdp_data(output_path=None):
         "List_of_countries_by_past_and_projected_GDP_(PPP)_per_capita")
     gdp_2000s = table_scrape(wikipedia_page, 2)
     gdp_2010s = table_scrape(wikipedia_page, 3)
-    
+
     # Merge the dataframes
     gdp_total = merge_dataframes([gdp_2000s, gdp_2010s], 
         on="Country (or dependent territory)")
@@ -179,12 +184,10 @@ def clean_gdp_data(input_path, output_path=None, clean_pop_data_path=None):
     """
     Clean GDP data by dropping unnecessary years, renaming columns, and adding
     missing competitors. 
-    
+
     Special cases: renamed Great Britain as United Kingdom and Chinese Taipei
-    as Taiwan; use the UN's GDP per capita for Cuba and North Korea; get
-    weighted averages of GDP per capita values for Serbia and Monetenegro to
-    combine into single value per year.
-    
+    as Taiwan; use the UN's GDP per capita for Cuba and North Korea.
+
     Args:
         clean_pop_data_path: path of cleaned dataframe:
         input_path: path of dataframe if not already cleaned.
