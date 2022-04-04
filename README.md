@@ -1,6 +1,5 @@
 # olympic-games-analysis
 Analysis of Olympic performance and its correlation with a country's GDP per capita and population size
-test edit
 
 ### Summary:
 We explored the correlations between the number of medals a country won in the years 2004-2016 at the Summer Olympics and the country's GDP and population. We later expanded the scope of this project to also include the number of athletes which a country sent in the given year. While the project also contains the data to visulise and model specific medal categories (Gold, Silver, Bronze), this isn't further explored in this project.
