@@ -399,7 +399,4 @@ def average_data(data_frame):
     new_data["Average GDP"] = (data_frame[f"GDP-2004"] + data_frame["GDP-2008"] + data_frame["GDP-2012"] + data_frame["GDP-2016"]) / 4
     new_data["Average Pop"] = (data_frame[f"Pop-2004"] + data_frame["Pop-2008"] + data_frame["Pop-2012"] + data_frame["Pop-2016"]) / 4 * 1000
     new_data["Average Athletes"] = (data_frame[f"Athletes-2004"] + data_frame["Athletes-2008"] + data_frame["Athletes-2012"] + data_frame["Athletes-2016"]) / 4
-<<<<<<< HEAD
     return new_data
-=======
->>>>>>> b080bb549e25c222445400d6d73622ac886c59d3
