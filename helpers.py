@@ -2,7 +2,7 @@ import pandas as pd # library for data analysis
 import requests # library to handle requests
 from bs4 import BeautifulSoup # library to parse HTML documents
 import re
-# import grama as gr # library for data cleaning
+import grama as gr # library for data cleaning
 # get the response in the form of html
 def table_scrape(url, index=0):
     """
@@ -53,7 +53,7 @@ def scrape_medal_table(url, year, host):
 
 
 def scrape_medal_data(output_path=None):
-    '''
+    """
     Scrapes medal data for desired years from Wikipedia and merges them into
     one dataframe.
     
@@ -62,7 +62,7 @@ def scrape_medal_data(output_path=None):
     
     Returns:
         The merged dataframe.
-    '''
+    """
     pg_2004 = "https://en.m.wikipedia.org/wiki/2004_Summer_Olympics_medal_table"
     pg_2008 = "https://en.m.wikipedia.org/wiki/2008_Summer_Olympics_medal_table"
     pg_2012 = "https://en.m.wikipedia.org/wiki/2012_Summer_Olympics_medal_table"
@@ -80,7 +80,7 @@ def scrape_medal_data(output_path=None):
 
 
 def scrape_population_data(output_path=None):
-    '''
+    """
     Scrape population data from wikipedia.
     
     Args:
@@ -88,7 +88,7 @@ def scrape_population_data(output_path=None):
     
     Returns:
         Dataframe containing scraped population data.
-    '''
+    """
     wikipedia_page = ("https://en.wikipedia.org/wiki/List_of_countries_by_past_"
     "and_projected_future_population#Estimates_between_the_years_1985_and_2015_"
     "(in_thousands)")
@@ -99,7 +99,7 @@ def scrape_population_data(output_path=None):
 
 
 def clean_population_data(filepath_original, filepath_result=None):
-    '''
+    """
     Clean population data from wikipedia by removing unnecessary years and
     percentages of population to leave whole numbers.
     
@@ -110,7 +110,7 @@ def clean_population_data(filepath_original, filepath_result=None):
     
     Returns:
         The cleaned population dataframe.
-    '''
+    """
     population = pd.read_csv(filepath_original)
     # dropping unnecessary years
     population.drop(["1985", "1990", "1995", "2000", "%", "%.1", "%.2", "%.3", "%.4","%.5", "%.6"], axis = 1, inplace = True)
@@ -134,7 +134,7 @@ def clean_population_data(filepath_original, filepath_result=None):
 
 
 def scrape_gdp_data(output_path=None):
-    '''
+    """
     Scrape the IMF's GDP per capita data from wikipedia.
     
     Args:
@@ -142,7 +142,7 @@ def scrape_gdp_data(output_path=None):
     
     Returns:
         A dataframe containing the scraped GDP data.
-    '''
+    """
     wikipedia_page = ("https://en.wikipedia.org/wiki/"
         "List_of_countries_by_past_and_projected_GDP_(PPP)_per_capita")
     gdp_2000s = table_scrape(wikipedia_page, 2)
@@ -156,7 +156,7 @@ def scrape_gdp_data(output_path=None):
 
 
 def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
-    '''
+    """
     Clean GDP data by dropping unnecessary years, renaming columns, and adding
     missing competitors. 
     
@@ -172,7 +172,7 @@ def clean_gdp_data(path_orig, path_result=None, clean_pop_data_path=None):
 
     Returns:
         Cleaned GDP dataframe.
-    '''
+    """
     gdp_total = pd.read_csv(path_orig)
     if clean_pop_data_path == None:
         population = clean_population_data("data/population_original.csv")
@@ -237,6 +237,10 @@ def scrape_athlete_table(url, table_num, year):
         print("Error: This table should not be scraped due to its status" \
           " code.")
 
+    data = text.encode("utf-8")
+    udata=data.decode("utf-8")
+    text=str(udata.encode("ascii","ignore"))
+
     text = text.replace(" (host)","")
     text = text.replace("(",",")
     text = text.replace(")","")
@@ -264,28 +268,6 @@ def scrape_athlete_data(output_path=None):
 
     all_athlete_dfs = [df_2004, df_2008, df_2012, df_2016]
     total = merge_dataframes(all_athlete_dfs)
-
-    if output_path != None:
-        total.to_csv(output_path, index=False)
-    return total
-
-
-def merge_data(medals_df, pop_df, gdp_df, output_path=None):        ## OBSOLETE - DELETE ------
-    '''
-    Merge medals, population, and gdp data into single dataframe based on
-    country.
-    
-    Args:
-        medals_df: dataframe with medals data.
-        pop_df: dataframe with population data.
-        gdp_df: dataframe with GDP per capita data.
-        output_path: name of file dataframe is saved to.
-    
-    Returns:
-        total: the merged dataframe.
-    '''
-    total = medals_df.merge(gdp_df,how="left",left_on="Country",right_on="Country")
-    total = total.merge(pop_df,how="left",left_on="Country",right_on="Country")
 
     if output_path != None:
         total.to_csv(output_path, index=False)
