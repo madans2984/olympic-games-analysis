@@ -14,22 +14,22 @@ The plotting and modeling functions are coded into the vis_helpers.py file. In t
 ### Installation:
 
 plotly
-'''
+```
 pip install plotly
-'''
+```
 grama
-'''
+```
 pip install py-grama
-'''
+```
 statsmodels
-'''
+```
 pip install statsmodels
-'''
+```
 requests
-'''
+```
 pip install requests
-'''
+```
 bs4
-'''
+```
 pip install bs4
-'''
+```
