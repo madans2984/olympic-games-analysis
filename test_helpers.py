@@ -44,7 +44,7 @@ def test_merge_dataframe():
     test_pop = pd.read_csv("test_data/pop_test_data1_clean.csv")
     assert df_merged.equals(merge_dataframes(
         [test_medals, test_gdp, test_pop]))
-        
+
 def test_pivot():
     df_clean = pd.read_csv("test_data/pivoting_test_data_clean.csv")
     df_pivot = pd.read_csv("test_data/pivoting_test_data.csv")
@@ -57,4 +57,3 @@ def test_average():
     df_done = pd.read_csv("test_data/averaging_test_data_done.csv")
     df_raw = pd.read_csv("test_data/averaging_test_data.csv")
     assert df_done.equals(average_data(df_raw))
-
