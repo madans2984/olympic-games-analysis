@@ -19,7 +19,7 @@ import re # regex library for removing text in square brackets
 import pandas as pd  # library for data analysis
 import requests  # library to handle requests
 from bs4 import BeautifulSoup  # library to parse HTML documents
-# import grama as gr  # library for data cleaning
+import grama as gr  # library for data cleaning
 
 
 def table_scrape(url, index=0):
@@ -387,7 +387,8 @@ def merge_dataframes(df_list, output_path=None, method="left",
                 and don't keep rows that don't match the reference column in
                 the left dataframe)
             merge_on: a string representing what will used as the how arg for
-                the pandas DataFrame merge() function (default: is "Country" meaning pandas will combine rows that have the same value in their column labeled "Country")
+                the pandas DataFrame merge() function (default: is "Country" meaning pandas
+                will combine rows that have the same value in their column labeled "Country")
         Returns:
             The merged dataframe.s
     """
