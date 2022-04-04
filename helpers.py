@@ -128,9 +128,6 @@ def clean_population_data(filepath_original, filepath_result=None):
     population.replace({"United Kingdom" : "Great Britain"}, inplace = True)
     population.replace({"Taiwan" : "Chinese Taipei"}, inplace = True)
 
-    # s_m_row = make_sum_row(population, "Serbia", "Montenegro")
-    # population = population.append(s_m_row, ignore_index=True)
-
     if filepath_result != None:
         population.to_csv(filepath_result, index=False)
     return population
@@ -305,8 +302,8 @@ def merge_dataframes(df_list, output_path=None, method="left", on="Country"):
     return total
 
 
-def pivot(new_data, data_frame):
-    new_data = (
+def pivot(data_frame):
+    od = (
     data_frame
     >> gr.tf_pivot_longer(
         columns=["Gold-2004", "Silver-2004", "Bronze-2004", "Total-2004", "Weighted-2004", "GDP-2004", "Pop-2004", "Athletes-2004",
@@ -326,12 +323,14 @@ def pivot(new_data, data_frame):
         values_from = "val"
     )
 )
-    new_data["Success Rate"] = new_data["Total"]/new_data["Athletes"]
+    od["Success Rate"] = od["Total"]/od["Athletes"]
+    return od
 
-def average_data(new_data, data_frame):
+def average_data(data_frame):
     new_data = pd.DataFrame()
     new_data["Country"] = data_frame["Country"]
     new_data["Average Total"] = (data_frame[f"Total-2004"] + data_frame["Total-2008"] + data_frame["Total-2012"] + data_frame["Total-2016"]) / 4
     new_data["Average GDP"] = (data_frame[f"GDP-2004"] + data_frame["GDP-2008"] + data_frame["GDP-2012"] + data_frame["GDP-2016"]) / 4
     new_data["Average Pop"] = (data_frame[f"Pop-2004"] + data_frame["Pop-2008"] + data_frame["Pop-2012"] + data_frame["Pop-2016"]) / 4 * 1000
     new_data["Average Athletes"] = (data_frame[f"Athletes-2004"] + data_frame["Athletes-2008"] + data_frame["Athletes-2012"] + data_frame["Athletes-2016"]) / 4
+    return new_data
